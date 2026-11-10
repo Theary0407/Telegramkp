@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.8.0.3 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		pre { font-size: 10pt; font-family: "Liberation Mono", monospace; background: transparent }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><pre>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;km&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;&gt;
+    &lt;title&gt;<span lang="hi-IN">បញ្ជីរើសទំនិញ </span>Telegram Web App&lt;/title&gt;
+    &lt;!-- Telegram Web App SDK --&gt;
+    &lt;script src=&quot;https://telegram.org/js/telegram-web-app.js&quot;&gt;&lt;/script&gt;
+    &lt;!-- Tailwind CSS --&gt;
+    &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+    &lt;!-- Google Fonts for Khmer --&gt;
+    &lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;&gt;
+    &lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.gstatic.com&quot; crossorigin&gt;
+    &lt;link href=&quot;https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+    &lt;style&gt;
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: var(--tg-theme-bg-color, #f4f6f8);
+            color: var(--tg-theme-text-color, #1c1e21);
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .tg-card {
+            background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+            border-color: var(--tg-theme-hint-color, #e2e8f0);
+        }
+        .tg-button {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+        .tg-hint {
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+        /* Custom Checkbox */
+        .custom-checkbox {
+            accent-color: var(--tg-theme-button-color, #2481cc);
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body class=&quot;pb-24&quot;&gt;
+
+    &lt;!-- Header Section --&gt;
+    &lt;div class=&quot;tg-card p-4 shadow-sm border-b sticky top-0 z-10&quot;&gt;
+        &lt;div class=&quot;flex items-center justify-between&quot;&gt;
+            &lt;div&gt;
+                &lt;h1 class=&quot;text-xl font-bold tracking-tight&quot;&gt;🛍️ <span lang="hi-IN">បញ្ជីគណនាតម្លៃទំនិញ</span>&lt;/h1&gt;
+                &lt;p class=&quot;text-xs tg-hint mt-0.5&quot;&gt;<span lang="hi-IN">ជ្រើសរើសទំនិញដើម្បីគណនាតម្លៃសរុប</span>&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;span class=&quot;px-2.5 py-1 text-xs rounded-full bg-blue-100 text-blue-800 font-medium dark:bg-blue-900/40 dark:text-blue-300&quot;&gt;
+                Aura Decor
+            &lt;/span&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;max-w-md mx-auto p-4 space-y-4&quot;&gt;
+        
+        &lt;!-- Action Toolbar --&gt;
+        &lt;div class=&quot;flex justify-between items-center px-1 text-sm&quot;&gt;
+            &lt;button onclick=&quot;toggleSelectAll(true)&quot; class=&quot;text-blue-600 dark:text-blue-400 font-medium text-xs hover:underline&quot;&gt;☑️ <span lang="hi-IN">ជ្រើសរើសទាំងអស់</span>&lt;/button&gt;
+            &lt;button onclick=&quot;toggleSelectAll(false)&quot; class=&quot;text-gray-500 font-medium text-xs hover:underline&quot;&gt;☒ <span lang="hi-IN">បោះបង់ទាំងអស់</span>&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Product List --&gt;
+        &lt;div id=&quot;product-list&quot; class=&quot;space-y-3&quot;&gt;
+            &lt;!-- Dynamic product items will be injected here --&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Order Summary Card --&gt;
+        &lt;div class=&quot;tg-card rounded-2xl p-4 shadow-sm border space-y-2 mt-4&quot;&gt;
+            &lt;h3 class=&quot;font-bold text-sm border-b pb-2 mb-2 tg-hint uppercase tracking-wider&quot;&gt;📊 <span lang="hi-IN">សរុបការបញ្ជាទិញ</span>&lt;/h3&gt;
+            
+            &lt;div class=&quot;flex justify-between text-sm&quot;&gt;
+                &lt;span class=&quot;tg-hint&quot;&gt;<span lang="hi-IN">ចំនួនមុខទំនិញ៖</span>&lt;/span&gt;
+                &lt;span id=&quot;selected-count&quot; class=&quot;font-medium&quot;&gt;0 <span lang="hi-IN">មុខ</span>&lt;/span&gt;
+            &lt;/div&gt;
+            
+            &lt;div class=&quot;flex justify-between text-sm&quot;&gt;
+                &lt;span class=&quot;tg-hint&quot;&gt;<span lang="hi-IN">សរុបតម្លៃទំនិញ៖</span>&lt;/span&gt;
+                &lt;span id=&quot;total-items-price&quot; class=&quot;font-medium&quot;&gt;$0.00&lt;/span&gt;
+            &lt;/div&gt;
+            
+            &lt;div class=&quot;flex justify-between text-sm&quot;&gt;
+                &lt;span class=&quot;tg-hint&quot;&gt;<span lang="hi-IN">សរុបថ្លៃដឹកជញ្ជូន៖</span>&lt;/span&gt;
+                &lt;span id=&quot;total-shipping-price&quot; class=&quot;font-medium&quot;&gt;$0.00&lt;/span&gt;
+            &lt;/div&gt;
+            
+            &lt;div class=&quot;border-t pt-2 mt-2 flex justify-between items-center&quot;&gt;
+                &lt;span class=&quot;font-bold text-base&quot;&gt;<span lang="hi-IN">តម្លៃសរុបរួម៖</span>&lt;/span&gt;
+                &lt;span id=&quot;grand-total&quot; class=&quot;font-extrabold text-xl text-blue-600 dark:text-blue-400&quot;&gt;$0.00&lt;/span&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Instruction / Setup Toggle --&gt;
+        &lt;details class=&quot;tg-card rounded-xl p-3 text-xs border tg-hint cursor-pointer&quot;&gt;
+            &lt;summary class=&quot;font-semibold text-center select-none text-blue-500&quot;&gt;📖 <span lang="hi-IN">របៀបបង្កើត និងដាក់ចូល </span>Telegram Bot (<span lang="hi-IN">ចុចមើល</span>)&lt;/summary&gt;
+            &lt;div class=&quot;mt-3 space-y-2 text-left leading-relaxed&quot;&gt;
+                &lt;p&gt;&lt;strong&gt;<span lang="hi-IN">ជំហានទី ១៖ </span>Up Host <span lang="hi-IN">ស្រួលៗ</span>&lt;/strong&gt;&lt;br&gt; Upload <span lang="hi-IN">ឯកសារ </span>&lt;code class=&quot;bg-gray-200 dark:bg-gray-700 px-1 rounded&quot;&gt;index.html&lt;/code&gt; <span lang="hi-IN">នេះទៅកាន់ </span>&lt;strong&gt;GitHub Pages&lt;/strong&gt;, &lt;strong&gt;Vercel&lt;/strong&gt; <span lang="hi-IN">ឬ </span>&lt;strong&gt;Netlify&lt;/strong&gt; <span lang="hi-IN">ដើម្បីទទួលបាន </span>Link Web (HTTPS)<span lang="hi-IN">។</span>&lt;/p&gt;
+                &lt;p&gt;&lt;strong&gt;<span lang="hi-IN">ជំហានទី ២៖ បង្កើត </span>Web App <span lang="hi-IN">តាម </span>@BotFather&lt;/strong&gt;&lt;br&gt; 
+                1. <span lang="hi-IN">បើក </span>Telegram <span lang="hi-IN">រចហើយស្វែងរក </span>&lt;code class=&quot;bg-gray-200 dark:bg-gray-700 px-1 rounded&quot;&gt;@BotFather&lt;/code&gt;&lt;br&gt;
+                2. <span lang="hi-IN">ផ្ញើសារ </span>&lt;code class=&quot;bg-gray-200 dark:bg-gray-700 px-1 rounded&quot;&gt;/newapp&lt;/code&gt;&lt;br&gt;
+                3. <span lang="hi-IN">ជ្រើសរើស </span>Bot <span lang="hi-IN">របស់អ្នក</span>&lt;br&gt;
+                4. <span lang="hi-IN">វាយបញ្ចូល </span>Title &amp; Description&lt;br&gt;
+                5. <span lang="hi-IN">ដាក់ </span>Link HTTPS <span lang="hi-IN">ដែលបានពី ជំហានទី ១</span>&lt;br&gt;
+                6. <span lang="hi-IN">ដាក់ </span>Short Name <span lang="hi-IN">សម្រាប់ </span>Web App&lt;/p&gt;
+                &lt;p&gt;&lt;strong&gt;<span lang="hi-IN">ជំហានទី ៣៖ ដាក់ប៊ូតុង </span>Menu <span lang="hi-IN">ក្នុង </span>Telegram Chat&lt;/strong&gt;&lt;br&gt;
+<span lang="hi-IN">                ផ្ញើសារ </span>&lt;code class=&quot;bg-gray-200 dark:bg-gray-700 px-1 rounded&quot;&gt;/setmenubutton&lt;/code&gt; <span lang="hi-IN">ទៅកាន់ </span>@BotFather <span lang="hi-IN">ដើម្បីដាក់ប៊ូតុង </span>&lt;strong&gt;&quot;🛒 <span lang="hi-IN">មើលទំនិញ</span>&quot;&lt;/strong&gt; <span lang="hi-IN">នៅលើ </span>Telegram Chat!&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/details&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Bottom Action Bar (Telegram WebApp Main Button Area) --&gt;
+    &lt;div class=&quot;fixed bottom-0 left-0 right-0 p-3 tg-card border-t shadow-lg flex gap-2 justify-center max-w-md mx-auto&quot;&gt;
+        &lt;button onclick=&quot;sendOrderToTelegram()&quot; class=&quot;tg-button w-full py-3 px-4 rounded-xl font-bold text-base shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2&quot;&gt;
+            &lt;span&gt;✈️ <span lang="hi-IN">ផ្ញើការកម្មង់ចូល </span>Telegram&lt;/span&gt;
+        &lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Toast Notification --&gt;
+    &lt;div id=&quot;toast&quot; class=&quot;fixed top-5 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-4 py-2 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50&quot;&gt;
+<span lang="hi-IN">        បានចម្លងអត្ថបទការកម្មង់រួចរាល់</span>!
+    &lt;/div&gt;
+
+    &lt;script&gt;
+        // Initialize Telegram WebApp SDK
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+
+        if (tg) {
+            tg.ready();
+            tg.expand(); // Make Web App full height in Telegram
+        }
+
+        // Product List Data
+        const products = [
+            { id: 1, name: &quot;<span lang="hi-IN">សេះមាសលើកជើងពីរ</span>&quot;, price: 4.08, shipping: 1.86, icon: &quot;🐎&quot;, checked: true },
+            { id: 2, name: &quot;<span lang="hi-IN">ស្លាបហង្សមាស ខ្សាច់ហូរ</span>&quot;, price: 4.15, shipping: 1.56, icon: &quot;🪶&quot;, checked: true },
+            { id: 3, name: &quot;<span lang="hi-IN">ឥន្ទ្រី </span>mini&quot;, price: 4.82, shipping: 0.98, icon: &quot;🦅&quot;, checked: true },
+            { id: 4, name: &quot;<span lang="hi-IN">សំពៅមាស</span>&quot;, price: 3.52, shipping: 1.50, icon: &quot;⛵&quot;, checked: true }
+        ];
+
+        // Render Product List
+        function renderProducts() {
+            const container = document.getElementById('product-list');
+            container.innerHTML = '';
+
+            products.forEach(product =&gt; {
+                const totalItemPrice = (product.price + product.shipping).toFixed(2);
+                
+                const card = document.createElement('div');
+                card.className = `tg-card rounded-xl p-3.5 border transition-all duration-200 flex items-center gap-3 cursor-pointer select-none ${
+                    product.checked ? 'border-blue-500/50 shadow-sm' : 'opacity-70 border-gray-200'
+                }`;
+                card.onclick = (e) =&gt; {
+                    // Prevent double toggling if clicking directly on checkbox
+                    if (e.target.tagName !== 'INPUT') {
+                        toggleProduct(product.id);
+                    }
+                };
+
+                card.innerHTML = `
+                    &lt;div&gt;
+                        &lt;input type=&quot;checkbox&quot; class=&quot;custom-checkbox&quot; ${product.checked ? 'checked' : ''} onchange=&quot;toggleProduct(${product.id})&quot;&gt;
+                    &lt;/div&gt;
+                    &lt;div class=&quot;text-2xl&quot;&gt;${product.icon}&lt;/div&gt;
+                    &lt;div class=&quot;flex-1 min-w-0&quot;&gt;
+                        &lt;h4 class=&quot;font-semibold text-sm truncate&quot;&gt;${product.name}&lt;/h4&gt;
+                        &lt;div class=&quot;text-xs tg-hint mt-0.5 flex gap-2&quot;&gt;
+                            &lt;span&gt;<span lang="hi-IN">តម្លៃ៖ </span>$${product.price.toFixed(2)}&lt;/span&gt;
+                            &lt;span&gt;•&lt;/span&gt;
+                            &lt;span&gt;<span lang="hi-IN">ដឹក៖ </span>$${product.shipping.toFixed(2)}&lt;/span&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;div class=&quot;text-right&quot;&gt;
+                        &lt;div class=&quot;font-bold text-sm text-blue-600 dark:text-blue-400&quot;&gt;$${totalItemPrice}&lt;/div&gt;
+                        &lt;div class=&quot;text-[10px] tg-hint&quot;&gt;<span lang="hi-IN">សរុប</span>&lt;/div&gt;
+                    &lt;/div&gt;
+                `;
+                container.appendChild(card);
+            });
+
+            calculateTotal();
+        }
+
+        // Toggle Single Checkbox
+        function toggleProduct(id) {
+            const product = products.find(p =&gt; p.id === id);
+            if (product) {
+                product.checked = !product.checked;
+                renderProducts();
+            }
+        }
+
+        // Select All / Deselect All
+        function toggleSelectAll(status) {
+            products.forEach(p =&gt; p.checked = status);
+            renderProducts();
+        }
+
+        // Calculate Totals
+        function calculateTotal() {
+            let selectedCount = 0;
+            let totalItemsPrice = 0;
+            let totalShippingPrice = 0;
+
+            products.forEach(p =&gt; {
+                if (p.checked) {
+                    selectedCount++;
+                    totalItemsPrice += p.price;
+                    totalShippingPrice += p.shipping;
+                }
+            });
+
+            const grandTotal = totalItemsPrice + totalShippingPrice;
+
+            document.getElementById('selected-count').innerText = `${selectedCount} <span lang="hi-IN">មុខ</span>`;
+            document.getElementById('total-items-price').innerText = `$${totalItemsPrice.toFixed(2)}`;
+            document.getElementById('total-shipping-price').innerText = `$${totalShippingPrice.toFixed(2)}`;
+            document.getElementById('grand-total').innerText = `$${grandTotal.toFixed(2)}`;
+        }
+
+        // Show Notification Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() =&gt; {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        // Send Order / Copy Order
+        function sendOrderToTelegram() {
+            const selectedItems = products.filter(p =&gt; p.checked);
+
+            if (selectedItems.length === 0) {
+                if (tg &amp;&amp; tg.showAlert) {
+                    tg.showAlert(&quot;<span lang="hi-IN">សូមជ្រើសរើសទំនិញយ៉ាងហោចណាស់មួយ</span>!&quot;);
+                } else {
+                    alert(&quot;<span lang="hi-IN">សូមជ្រើសរើសទំនិញយ៉ាងហោចណាស់មួយ</span>!&quot;);
+                }
+                return;
+            }
+
+            let orderText = &quot;🛒 **<span lang="hi-IN">ការបញ្ជាទិញថ្មីពី </span>Web App**\n---------------------------\n&quot;;
+            let totalItems = 0;
+            let totalShip = 0;
+
+            selectedItems.forEach((item, index) =&gt; {
+                const subtotal = item.price + item.shipping;
+                totalItems += item.price;
+                totalShip += item.shipping;
+                orderText += `${index + 1}. ${item.name}\n   - <span lang="hi-IN">តម្លៃ</span>: $${item.price.toFixed(2)} | <span lang="hi-IN">ដឹក</span>: $${item.shipping.toFixed(2)} =&gt; **$${subtotal.toFixed(2)}**\n`;
+            });
+
+            const grandTotal = totalItems + totalShip;
+            orderText += &quot;---------------------------\n&quot;;
+            orderText += `📦 <span lang="hi-IN">សរុបទំនិញ</span>: $${totalItems.toFixed(2)}\n`;
+            orderText += `🚚 <span lang="hi-IN">សរុបថ្លៃដឹក</span>: $${totalShip.toFixed(2)}\n`;
+            orderText += `💰 **<span lang="hi-IN">តម្លៃសរុបរួម</span>: $${grandTotal.toFixed(2)}**`;
+
+            // If inside Telegram WebApp, send data back to bot
+            if (tg &amp;&amp; tg.sendData) {
+                try {
+                    tg.sendData(JSON.stringify({
+                        items: selectedItems,
+                        totalItemsPrice: totalItems.toFixed(2),
+                        totalShippingPrice: totalShip.toFixed(2),
+                        grandTotal: grandTotal.toFixed(2)
+                    }));
+                    tg.close();
+                } catch (e) {
+                    copyToClipboard(orderText);
+                }
+            } else {
+                // Fallback for normal browsers: Copy to clipboard
+                copyToClipboard(orderText);
+            }
+        }
+
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast(&quot;<span lang="hi-IN">បានចម្លងអត្ថបទការកម្មង់</span>! <span lang="hi-IN">អាច </span>Paste <span lang="hi-IN">ផ្ញើក្នុង </span>Chat <span lang="hi-IN">បាន</span>&quot;);
+        }
+
+        // Initial Render
+        renderProducts();
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+</body>
+</html>
