@@ -2,299 +2,781 @@
 <html lang="km">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>បញ្ជីរើសទំនិញ Telegram Web App</title>
-    <!-- Telegram Web App SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Decor - បញ្ជីគណនាតម្លៃទំនិញ</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for Khmer -->
+    <!-- Khmer Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Exporting to Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <style>
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            background-color: var(--tg-theme-bg-color, #f4f6f8);
-            color: var(--tg-theme-text-color, #1c1e21);
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
+            background-color: #f1f5f9;
         }
-        .tg-card {
-            background-color: var(--tg-theme-secondary-bg-color, #ffffff);
-            border-color: var(--tg-theme-hint-color, #e2e8f0);
+        ::-webkit-scrollbar {
+            width: 6px;
         }
-        .tg-button {
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-        }
-        .tg-hint {
-            color: var(--tg-theme-hint-color, #8e8e93);
-        }
-        /* Custom Checkbox */
-        .custom-checkbox {
-            accent-color: var(--tg-theme-button-color, #2481cc);
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
-            cursor: pointer;
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
         }
     </style>
 </head>
-<body class="pb-24">
+<body class="min-h-screen text-slate-800 pb-10">
 
-    <!-- Header Section -->
-    <div class="tg-card p-4 shadow-sm border-b sticky top-0 z-10">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-bold tracking-tight">🛍️ បញ្ជីគណនាតម្លៃទំនិញ</h1>
-                <p class="text-xs tg-hint mt-0.5">ជ្រើសរើសទំនិញដើម្បីគណនាតម្លៃសរុប</p>
+    <!-- 🔒 Password Overlay Modal -->
+    <div id="passwordModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center border border-slate-100">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                <i class="fa-solid fa-lock"></i>
             </div>
-            <span class="px-2.5 py-1 text-xs rounded-full bg-blue-100 text-blue-800 font-medium dark:bg-blue-900/40 dark:text-blue-300">
-                Aura Decor
-            </span>
+            <h2 class="text-xl font-bold text-slate-800 mb-1">ទំព័រនេះជាឯកជន!</h2>
+            <p class="text-slate-500 text-sm mb-5">សូមវាយបញ្ចូលលេខសម្ងាត់ដើម្បីចូលប្រើប្រាស់</p>
+
+            <form onsubmit="checkPassword(event)" class="space-y-4">
+                <div>
+                    <input type="password" id="passInput" placeholder="បញ្ចូលលេខសម្ងាត់..." 
+                           class="w-full px-4 py-3 border border-slate-300 rounded-xl text-center text-lg font-semibold tracking-widest focus:ring-2 focus:ring-blue-500 outline-none" 
+                           autofocus required>
+                </div>
+                <div id="errorMessage" class="text-red-500 text-xs hidden font-medium">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> លេខសម្ងាត់មិនត្រឹមត្រូវទេ!
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl shadow-lg shadow-blue-500/30 transition active:scale-[0.98]">
+                    ចូលទៅកាន់កម្មវិធី <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </form>
         </div>
     </div>
 
-    <div class="max-w-md mx-auto p-4 space-y-4">
+    <!-- MAIN APP CONTAINER -->
+    <div id="appContainer" class="max-w-md mx-auto hidden transition-opacity duration-300">
         
-        <!-- Action Toolbar -->
-        <div class="flex justify-between items-center px-1 text-sm">
-            <button onclick="toggleSelectAll(true)" class="text-blue-600 dark:text-blue-400 font-medium text-xs hover:underline">☑️ ជ្រើសរើសទាំងអស់</button>
-            <button onclick="toggleSelectAll(false)" class="text-gray-500 font-medium text-xs hover:underline">☒ បោះបង់ទាំងអស់</button>
-        </div>
-
-        <!-- Product List -->
-        <div id="product-list" class="space-y-3">
-            <!-- Dynamic product items will be injected here -->
-        </div>
-
-        <!-- Order Summary Card -->
-        <div class="tg-card rounded-2xl p-4 shadow-sm border space-y-2 mt-4">
-            <h3 class="font-bold text-sm border-b pb-2 mb-2 tg-hint uppercase tracking-wider">📊 សរុបការបញ្ជាទិញ</h3>
-            
-            <div class="flex justify-between text-sm">
-                <span class="tg-hint">ចំនួនមុខទំនិញ៖</span>
-                <span id="selected-count" class="font-medium">0 មុខ</span>
-            </div>
-            
-            <div class="flex justify-between text-sm">
-                <span class="tg-hint">សរុបតម្លៃទំនិញ៖</span>
-                <span id="total-items-price" class="font-medium">$0.00</span>
-            </div>
-            
-            <div class="flex justify-between text-sm">
-                <span class="tg-hint">សរុបថ្លៃដឹកជញ្ជូន៖</span>
-                <span id="total-shipping-price" class="font-medium">$0.00</span>
-            </div>
-            
-            <div class="border-t pt-2 mt-2 flex justify-between items-center">
-                <span class="font-bold text-base">តម្លៃសរុបរួម៖</span>
-                <span id="grand-total" class="font-extrabold text-xl text-blue-600 dark:text-blue-400">$0.00</span>
-            </div>
-        </div>
-
-        <!-- Instruction / Setup Toggle -->
-        <details class="tg-card rounded-xl p-3 text-xs border tg-hint cursor-pointer">
-            <summary class="font-semibold text-center select-none text-blue-500">📖 របៀបបង្កើត និងដាក់ចូល Telegram Bot (ចុចមើល)</summary>
-            <div class="mt-3 space-y-2 text-left leading-relaxed">
-                <p><strong>ជំហានទី ១៖ Up Host ស្រួលៗ</strong><br> Upload ឯកសារ <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">index.html</code> នេះទៅកាន់ <strong>GitHub Pages</strong>, <strong>Vercel</strong> ឬ <strong>Netlify</strong> ដើម្បីទទួលបាន Link Web (HTTPS)។</p>
-                <p><strong>ជំហានទី ២៖ បង្កើត Web App តាម @BotFather</strong><br> 
-                1. បើក Telegram រចហើយស្វែងរក <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">@BotFather</code><br>
-                2. ផ្ញើសារ <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">/newapp</code><br>
-                3. ជ្រើសរើស Bot របស់អ្នក<br>
-                4. វាយបញ្ចូល Title & Description<br>
-                5. ដាក់ Link HTTPS ដែលបានពី ជំហានទី ១<br>
-                6. ដាក់ Short Name សម្រាប់ Web App</p>
-                <p><strong>ជំហានទី ៣៖ ដាក់ប៊ូតុង Menu ក្នុង Telegram Chat</strong><br>
-                ផ្ញើសារ <code class="bg-gray-200 dark:bg-gray-700 px-1 rounded">/setmenubutton</code> ទៅកាន់ @BotFather ដើម្បីដាក់ប៊ូតុង <strong>"🛒 មើលទំនិញ"</strong> នៅលើ Telegram Chat!</p>
-            </div>
-        </details>
-    </div>
-
-    <!-- Bottom Action Bar (Telegram WebApp Main Button Area) -->
-    <div class="fixed bottom-0 left-0 right-0 p-3 tg-card border-t shadow-lg flex gap-2 justify-center max-w-md mx-auto">
-        <button onclick="sendOrderToTelegram()" class="tg-button w-full py-3 px-4 rounded-xl font-bold text-base shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
-            <span>✈️ ផ្ញើការកម្មង់ចូល Telegram</span>
-        </button>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-4 py-2 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50">
-        បានចម្លងអត្ថបទការកម្មង់រួចរាល់!
-    </div>
-
-    <script>
-        // Initialize Telegram WebApp SDK
-        const tg = window.Telegram ? window.Telegram.WebApp : null;
-
-        if (tg) {
-            tg.ready();
-            tg.expand(); // Make Web App full height in Telegram
-        }
-
-        // Product List Data
-        const products = [
-            { id: 1, name: "សេះមាសលើកជើងពីរ", price: 4.08, shipping: 1.86, icon: "🐎", checked: true },
-            { id: 2, name: "ស្លាបហង្សមាស ខ្សាច់ហូរ", price: 4.15, shipping: 1.56, icon: "🪶", checked: true },
-            { id: 3, name: "ឥន្ទ្រី mini", price: 4.82, shipping: 0.98, icon: "🦅", checked: true },
-            { id: 4, name: "សំពៅមាស", price: 3.52, shipping: 1.50, icon: "⛵", checked: true }
-        ];
-
-        // Render Product List
-        function renderProducts() {
-            const container = document.getElementById('product-list');
-            container.innerHTML = '';
-
-            products.forEach(product => {
-                const totalItemPrice = (product.price + product.shipping).toFixed(2);
-                
-                const card = document.createElement('div');
-                card.className = `tg-card rounded-xl p-3.5 border transition-all duration-200 flex items-center gap-3 cursor-pointer select-none ${
-                    product.checked ? 'border-blue-500/50 shadow-sm' : 'opacity-70 border-gray-200'
-                }`;
-                card.onclick = (e) => {
-                    // Prevent double toggling if clicking directly on checkbox
-                    if (e.target.tagName !== 'INPUT') {
-                        toggleProduct(product.id);
-                    }
-                };
-
-                card.innerHTML = `
-                    <div>
-                        <input type="checkbox" class="custom-checkbox" ${product.checked ? 'checked' : ''} onchange="toggleProduct(${product.id})">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-5 rounded-b-3xl shadow-lg mb-6 sticky top-0 z-30">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                        <i class="fa-solid fa-store text-xl text-white"></i>
                     </div>
-                    <div class="text-2xl">${product.icon}</div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-sm truncate">${product.name}</h4>
-                        <div class="text-xs tg-hint mt-0.5 flex gap-2">
-                            <span>តម្លៃ៖ $${product.price.toFixed(2)}</span>
-                            <span>•</span>
-                            <span>ដឹក៖ $${product.shipping.toFixed(2)}</span>
-                        </div>
+                    <div>
+                        <h1 class="text-lg font-bold leading-tight">Aura Decor</h1>
+                        <p class="text-xs text-blue-200">ប្រព័ន្ធគណនាតម្លៃ & ស្តុកទំនិញ</p>
+                    </div>
+                </div>
+                <button onclick="lockApp()" class="w-9 h-9 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition" title="ចាកចេញ">
+                    <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="px-4 space-y-5">
+
+            <!-- 🧮 CALCULATOR DISPLAY BOX -->
+            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-blue-600 text-lg"></i>
+                        <h2 class="font-bold text-slate-800">សរុបទំនិញដែលបានជ្រើសរើស</h2>
+                    </div>
+                    <span id="selectedCount" class="text-xs bg-blue-50 text-blue-600 font-semibold px-2.5 py-1 rounded-lg border border-blue-100">
+                        បានជ្រើសរើស 0 មុខ
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <span class="block text-xs font-medium text-slate-500 mb-0.5">ដើមសរុប (+ ដឹក)</span>
+                        <span id="totalCostDisplay" class="text-lg font-bold text-slate-700">$0.00</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <span class="block text-xs font-medium text-slate-500 mb-0.5">តម្លៃលក់សរុប</span>
+                        <span id="totalSellDisplay" class="text-lg font-bold text-blue-600">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- Live Profit Card -->
+                <div id="resultCard" class="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3 flex justify-between items-center transition mb-3">
+                    <div>
+                        <span class="text-xs text-emerald-600 font-medium block">ប្រាក់ចំណេញសរុប</span>
+                        <span id="profitAmount" class="text-xl font-bold text-emerald-700">$0.00</span>
                     </div>
                     <div class="text-right">
-                        <div class="font-bold text-sm text-blue-600 dark:text-blue-400">$${totalItemPrice}</div>
-                        <div class="text-[10px] tg-hint">សរុប</div>
+                        <span class="text-xs text-emerald-600 font-medium block">ភាគរយចំណេញ</span>
+                        <span id="profitPercent" class="text-sm font-bold bg-emerald-200/60 text-emerald-800 px-2.5 py-1 rounded-lg inline-block">0%</span>
                     </div>
-                `;
-                container.appendChild(card);
+                </div>
+
+                <!-- 📊 Export to Excel Button -->
+                <div class="grid grid-cols-2 gap-2 mt-3">
+                    <button onclick="saveDailySale()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-1.5 text-xs active:scale-[0.98]">
+                        <i class="fa-solid fa-floppy-disk text-sm"></i> រក្សាទុកការលក់ថ្ងៃនេះ
+                    </button>
+                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl shadow-md shadow-emerald-500/20 transition flex items-center justify-center gap-1.5 text-xs active:scale-[0.98]">
+                        <i class="fa-solid fa-file-excel text-sm"></i> Export to Excel
+                    </button>
+                </div>
+            </section>
+
+            <!-- 📜 DAILY SALES HISTORY -->
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80">
+                <div class="flex flex-col gap-2 mb-3 pb-2 border-b border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i>
+                            <h2 class="font-bold text-slate-800 text-sm">ប្រវត្តិលក់ប្រចាំថ្ងៃ</h2>
+                        </div>
+                        <button onclick="clearAllHistory()" class="text-[11px] text-rose-500 hover:underline">លុបប្រវត្តិទាំងអស់</button>
+                    </div>
+
+                    <!-- 📅 Filter by Date or Month -->
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div>
+                            <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">ជ្រើសរើសថ្ងៃលក់:</label>
+                            <input type="date" id="dateFilter" onchange="renderHistory()" class="w-full bg-slate-50 border border-slate-200 rounded-lg text-xs px-2 py-1 text-slate-700 outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-500 font-semibold block mb-0.5">ជ្រើសរើសខែលក់:</label>
+                            <input type="month" id="monthFilter" onchange="renderHistory()" class="w-full bg-slate-50 border border-slate-200 rounded-lg text-xs px-2 py-1 text-slate-700 outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="salesHistoryList" class="space-y-2 max-h-60 overflow-y-auto pr-1 mb-4">
+                    <p class="text-xs text-slate-400 text-center py-3">មិនទាន់មានទិន្នន័យរក្សាទុកនៅឡើយទេ</p>
+                </div>
+
+                <!-- 📅 MONTHLY SUMMARY SECTION -->
+                <div class="pt-3 border-t border-slate-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-calendar-days text-purple-600"></i>
+                        <h3 class="font-bold text-slate-800 text-xs">សរុបការលក់ប្រចាំខែ (Monthly Summary)</h3>
+                    </div>
+                    <div id="monthlySummaryList" class="space-y-2">
+                        <!-- Dynamic Monthly Data -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 📦 PRODUCT CATALOG LIST -->
+            <section class="space-y-3">
+                <div class="flex items-center justify-between px-1">
+                    <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-boxes-stacked text-indigo-600"></i> បញ្ជីទំនិញ
+                    </h2>
+                    <button onclick="toggleSelectAll()" id="selectAllBtn" class="text-xs text-blue-600 font-semibold hover:underline">
+                        ជ្រើសរើសទាំងអស់
+                    </button>
+                </div>
+
+                <!-- 1. សេះមាសលើកជើងមុខ២ -->
+                <div class="product-item bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex gap-3 items-center hover:shadow-md transition">
+                    <input type="checkbox" class="product-checkbox w-5 h-5 accent-blue-600 rounded cursor-pointer flex-shrink-0" onchange="calculateTotal()">
+                    
+                    <!-- 🖼️ Image with Upload Button -->
+                    <div class="relative w-16 h-16 flex-shrink-0 group cursor-pointer" onclick="this.querySelector('input').click()">
+                        <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=300&auto=format&fit=crop&q=80" alt="ទំនិញ" class="product-img w-full h-full object-cover rounded-xl border bg-slate-100">
+                        <div class="absolute inset-0 bg-black/40 rounded-xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition text-[9px] font-medium text-center p-0.5">
+                            <i class="fa-solid fa-camera text-xs mb-0.5"></i>
+                            <span>Upload</span>
+                        </div>
+                        <input type="file" accept="image/*" class="hidden" onchange="changeProductImage(this)">
+                    </div>
+
+                    <div class="flex-grow min-w-0 space-y-1.5">
+                        <div class="flex justify-between items-center gap-1">
+                            <h3 class="font-bold text-slate-800 text-sm truncate">សេះមាសលើកជើងមុខ២</h3>
+                            <div class="flex items-center gap-1 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-100 flex-shrink-0">
+                                <span class="text-purple-600 font-bold text-[9px]">ចំនួន:</span>
+                                <input type="number" min="1" value="1" class="product-qty-input w-10 bg-white text-center font-bold text-purple-700 text-xs rounded border border-purple-200 focus:ring-1 focus:ring-purple-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            <div class="bg-slate-50 p-1 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block text-[9px]">ដើមចិន ($)</span>
+                                <input type="number" step="0.01" value="4.08" class="product-cost-input w-full bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-blue-50 p-1 rounded-lg border border-blue-100">
+                                <span class="text-blue-600 block text-[9px]">Shipping ($)</span>
+                                <input type="number" step="0.01" value="1.86" class="product-ship-input w-full bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-amber-50 p-1 rounded-lg border border-amber-100">
+                                <span class="text-amber-600 block text-[9px]">ដឹកក្នុងស្រុក ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-express-input w-full bg-white px-1.5 py-0.5 rounded border border-amber-200 text-amber-700 font-bold text-xs focus:ring-1 focus:ring-amber-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-emerald-50 p-1 rounded-lg border border-emerald-100">
+                                <span class="text-emerald-600 block text-[9px]">តម្លៃលក់ ($)</span>
+                                <input type="number" step="0.01" value="12.00" class="product-sell-input w-full bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-700 font-bold text-xs focus:ring-1 focus:ring-emerald-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. ស្លាបហង្សមាស & លំហូរខ្សាច់ -->
+                <div class="product-item bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex gap-3 items-center hover:shadow-md transition">
+                    <input type="checkbox" class="product-checkbox w-5 h-5 accent-blue-600 rounded cursor-pointer flex-shrink-0" onchange="calculateTotal()">
+                    
+                    <!-- 🖼️ Image with Upload Button -->
+                    <div class="relative w-16 h-16 flex-shrink-0 group cursor-pointer" onclick="this.querySelector('input').click()">
+                        <img src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300&auto=format&fit=crop&q=80" alt="ទំនិញ" class="product-img w-full h-full object-cover rounded-xl border bg-slate-100">
+                        <div class="absolute inset-0 bg-black/40 rounded-xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition text-[9px] font-medium text-center p-0.5">
+                            <i class="fa-solid fa-camera text-xs mb-0.5"></i>
+                            <span>Upload</span>
+                        </div>
+                        <input type="file" accept="image/*" class="hidden" onchange="changeProductImage(this)">
+                    </div>
+
+                    <div class="flex-grow min-w-0 space-y-1.5">
+                        <div class="flex justify-between items-center gap-1">
+                            <h3 class="font-bold text-slate-800 text-sm truncate">ស្លាបហង្សមាស & លំហូរខ្សាច់</h3>
+                            <div class="flex items-center gap-1 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-100 flex-shrink-0">
+                                <span class="text-purple-600 font-bold text-[9px]">ចំនួន:</span>
+                                <input type="number" min="1" value="1" class="product-qty-input w-10 bg-white text-center font-bold text-purple-700 text-xs rounded border border-purple-200 focus:ring-1 focus:ring-purple-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            <div class="bg-slate-50 p-1 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block text-[9px]">ដើមចិន ($)</span>
+                                <input type="number" step="0.01" value="4.15" class="product-cost-input w-full bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-blue-50 p-1 rounded-lg border border-blue-100">
+                                <span class="text-blue-600 block text-[9px]">Shipping ($)</span>
+                                <input type="number" step="0.01" value="1.56" class="product-ship-input w-full bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-amber-50 p-1 rounded-lg border border-amber-100">
+                                <span class="text-amber-600 block text-[9px]">ដឹកក្នុងស្រុក ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-express-input w-full bg-white px-1.5 py-0.5 rounded border border-amber-200 text-amber-700 font-bold text-xs focus:ring-1 focus:ring-amber-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-emerald-50 p-1 rounded-lg border border-emerald-100">
+                                <span class="text-emerald-600 block text-[9px]">តម្លៃលក់ ($)</span>
+                                <input type="number" step="0.01" value="12.00" class="product-sell-input w-full bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-700 font-bold text-xs focus:ring-1 focus:ring-emerald-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. ឥន្ទ្រី 26.5cm -->
+                <div class="product-item bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex gap-3 items-center hover:shadow-md transition">
+                    <input type="checkbox" class="product-checkbox w-5 h-5 accent-blue-600 rounded cursor-pointer flex-shrink-0" onchange="calculateTotal()">
+                    
+                    <!-- 🖼️ Image with Upload Button -->
+                    <div class="relative w-16 h-16 flex-shrink-0 group cursor-pointer" onclick="this.querySelector('input').click()">
+                        <img src="https://images.unsplash.com/photo-1551085254-e96b210df58a?w=300&auto=format&fit=crop&q=80" alt="ទំនិញ" class="product-img w-full h-full object-cover rounded-xl border bg-slate-100">
+                        <div class="absolute inset-0 bg-black/40 rounded-xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition text-[9px] font-medium text-center p-0.5">
+                            <i class="fa-solid fa-camera text-xs mb-0.5"></i>
+                            <span>Upload</span>
+                        </div>
+                        <input type="file" accept="image/*" class="hidden" onchange="changeProductImage(this)">
+                    </div>
+
+                    <div class="flex-grow min-w-0 space-y-1.5">
+                        <div class="flex justify-between items-center gap-1">
+                            <h3 class="font-bold text-slate-800 text-sm truncate">ឥន្ទ្រី (26.5cm)</h3>
+                            <div class="flex items-center gap-1 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-100 flex-shrink-0">
+                                <span class="text-purple-600 font-bold text-[9px]">ចំនួន:</span>
+                                <input type="number" min="1" value="1" class="product-qty-input w-10 bg-white text-center font-bold text-purple-700 text-xs rounded border border-purple-200 focus:ring-1 focus:ring-purple-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            <div class="bg-slate-50 p-1 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block text-[9px]">ដើមចិន ($)</span>
+                                <input type="number" step="0.01" value="4.82" class="product-cost-input w-full bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-blue-50 p-1 rounded-lg border border-blue-100">
+                                <span class="text-blue-600 block text-[9px]">Shipping ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-ship-input w-full bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-amber-50 p-1 rounded-lg border border-amber-100">
+                                <span class="text-amber-600 block text-[9px]">ដឹកក្នុងស្រុក ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-express-input w-full bg-white px-1.5 py-0.5 rounded border border-amber-200 text-amber-700 font-bold text-xs focus:ring-1 focus:ring-amber-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-emerald-50 p-1 rounded-lg border border-emerald-100">
+                                <span class="text-emerald-600 block text-[9px]">តម្លៃលក់ ($)</span>
+                                <input type="number" step="0.01" value="13.00" class="product-sell-input w-full bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-700 font-bold text-xs focus:ring-1 focus:ring-emerald-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. ឥន្ទ្រី 29cm -->
+                <div class="product-item bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex gap-3 items-center hover:shadow-md transition">
+                    <input type="checkbox" class="product-checkbox w-5 h-5 accent-blue-600 rounded cursor-pointer flex-shrink-0" onchange="calculateTotal()">
+                    
+                    <!-- 🖼️ Image with Upload Button -->
+                    <div class="relative w-16 h-16 flex-shrink-0 group cursor-pointer" onclick="this.querySelector('input').click()">
+                        <img src="https://images.unsplash.com/photo-1551085254-e96b210df58a?w=300&auto=format&fit=crop&q=80" alt="ទំនិញ" class="product-img w-full h-full object-cover rounded-xl border bg-slate-100">
+                        <div class="absolute inset-0 bg-black/40 rounded-xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition text-[9px] font-medium text-center p-0.5">
+                            <i class="fa-solid fa-camera text-xs mb-0.5"></i>
+                            <span>Upload</span>
+                        </div>
+                        <input type="file" accept="image/*" class="hidden" onchange="changeProductImage(this)">
+                    </div>
+
+                    <div class="flex-grow min-w-0 space-y-1.5">
+                        <div class="flex justify-between items-center gap-1">
+                            <h3 class="font-bold text-slate-800 text-sm truncate">ឥន្ទ្រី (29cm)</h3>
+                            <div class="flex items-center gap-1 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-100 flex-shrink-0">
+                                <span class="text-purple-600 font-bold text-[9px]">ចំនួន:</span>
+                                <input type="number" min="1" value="1" class="product-qty-input w-10 bg-white text-center font-bold text-purple-700 text-xs rounded border border-purple-200 focus:ring-1 focus:ring-purple-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            <div class="bg-slate-50 p-1 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block text-[9px]">ដើមចិន ($)</span>
+                                <input type="number" step="0.01" value="5.40" class="product-cost-input w-full bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-blue-50 p-1 rounded-lg border border-blue-100">
+                                <span class="text-blue-600 block text-[9px]">Shipping ($)</span>
+                                <input type="number" step="0.01" value="5.60" class="product-ship-input w-full bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-amber-50 p-1 rounded-lg border border-amber-100">
+                                <span class="text-amber-600 block text-[9px]">ដឹកក្នុងស្រុក ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-express-input w-full bg-white px-1.5 py-0.5 rounded border border-amber-200 text-amber-700 font-bold text-xs focus:ring-1 focus:ring-amber-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-emerald-50 p-1 rounded-lg border border-emerald-100">
+                                <span class="text-emerald-600 block text-[9px]">តម្លៃលក់ ($)</span>
+                                <input type="number" step="0.01" value="20.00" class="product-sell-input w-full bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-700 font-bold text-xs focus:ring-1 focus:ring-emerald-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. សំពៅមាស -->
+                <div class="product-item bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex gap-3 items-center hover:shadow-md transition">
+                    <input type="checkbox" class="product-checkbox w-5 h-5 accent-blue-600 rounded cursor-pointer flex-shrink-0" onchange="calculateTotal()">
+                    
+                    <!-- 🖼️ Image with Upload Button -->
+                    <div class="relative w-16 h-16 flex-shrink-0 group cursor-pointer" onclick="this.querySelector('input').click()">
+                        <img src="https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=300&auto=format&fit=crop&q=80" alt="ទំនិញ" class="product-img w-full h-full object-cover rounded-xl border bg-slate-100">
+                        <div class="absolute inset-0 bg-black/40 rounded-xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition text-[9px] font-medium text-center p-0.5">
+                            <i class="fa-solid fa-camera text-xs mb-0.5"></i>
+                            <span>Upload</span>
+                        </div>
+                        <input type="file" accept="image/*" class="hidden" onchange="changeProductImage(this)">
+                    </div>
+
+                    <div class="flex-grow min-w-0 space-y-1.5">
+                        <div class="flex justify-between items-center gap-1">
+                            <h3 class="font-bold text-slate-800 text-sm truncate">សំពៅមាស</h3>
+                            <div class="flex items-center gap-1 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-100 flex-shrink-0">
+                                <span class="text-purple-600 font-bold text-[9px]">ចំនួន:</span>
+                                <input type="number" min="1" value="1" class="product-qty-input w-10 bg-white text-center font-bold text-purple-700 text-xs rounded border border-purple-200 focus:ring-1 focus:ring-purple-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            <div class="bg-slate-50 p-1 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block text-[9px]">ដើមចិន ($)</span>
+                                <input type="number" step="0.01" value="3.52" class="product-cost-input w-full bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-blue-50 p-1 rounded-lg border border-blue-100">
+                                <span class="text-blue-600 block text-[9px]">Shipping ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-ship-input w-full bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-amber-50 p-1 rounded-lg border border-amber-100">
+                                <span class="text-amber-600 block text-[9px]">ដឹកក្នុងស្រុក ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-express-input w-full bg-white px-1.5 py-0.5 rounded border border-amber-200 text-amber-700 font-bold text-xs focus:ring-1 focus:ring-amber-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-emerald-50 p-1 rounded-lg border border-emerald-100">
+                                <span class="text-emerald-600 block text-[9px]">តម្លៃលក់ ($)</span>
+                                <input type="number" step="0.01" value="10.00" class="product-sell-input w-full bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-700 font-bold text-xs focus:ring-1 focus:ring-emerald-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. តោមាស -->
+                <div class="product-item bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex gap-3 items-center hover:shadow-md transition">
+                    <input type="checkbox" class="product-checkbox w-5 h-5 accent-blue-600 rounded cursor-pointer flex-shrink-0" onchange="calculateTotal()">
+                    
+                    <!-- 🖼️ Image with Upload Button -->
+                    <div class="relative w-16 h-16 flex-shrink-0 group cursor-pointer" onclick="this.querySelector('input').click()">
+                        <img src="https://images.unsplash.com/photo-1545241047-6083a3684587?w=300&auto=format&fit=crop&q=80" alt="ទំនិញ" class="product-img w-full h-full object-cover rounded-xl border bg-slate-100">
+                        <div class="absolute inset-0 bg-black/40 rounded-xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition text-[9px] font-medium text-center p-0.5">
+                            <i class="fa-solid fa-camera text-xs mb-0.5"></i>
+                            <span>Upload</span>
+                        </div>
+                        <input type="file" accept="image/*" class="hidden" onchange="changeProductImage(this)">
+                    </div>
+
+                    <div class="flex-grow min-w-0 space-y-1.5">
+                        <div class="flex justify-between items-center gap-1">
+                            <h3 class="font-bold text-slate-800 text-sm truncate">តោមាស</h3>
+                            <div class="flex items-center gap-1 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-100 flex-shrink-0">
+                                <span class="text-purple-600 font-bold text-[9px]">ចំនួន:</span>
+                                <input type="number" min="1" value="1" class="product-qty-input w-10 bg-white text-center font-bold text-purple-700 text-xs rounded border border-purple-200 focus:ring-1 focus:ring-purple-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            <div class="bg-slate-50 p-1 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block text-[9px]">ដើមចិន ($)</span>
+                                <input type="number" step="0.01" value="3.67" class="product-cost-input w-full bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-blue-50 p-1 rounded-lg border border-blue-100">
+                                <span class="text-blue-600 block text-[9px]">Shipping ($)</span>
+                                <input type="number" step="0.01" value="1.56" class="product-ship-input w-full bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-amber-50 p-1 rounded-lg border border-amber-100">
+                                <span class="text-amber-600 block text-[9px]">ដឹកក្នុងស្រុក ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-express-input w-full bg-white px-1.5 py-0.5 rounded border border-amber-200 text-amber-700 font-bold text-xs focus:ring-1 focus:ring-amber-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-emerald-50 p-1 rounded-lg border border-emerald-100">
+                                <span class="text-emerald-600 block text-[9px]">តម្លៃលក់ ($)</span>
+                                <input type="number" step="0.01" value="11.00" class="product-sell-input w-full bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-700 font-bold text-xs focus:ring-1 focus:ring-emerald-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. គោជល់មាស -->
+                <div class="product-item bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 flex gap-3 items-center hover:shadow-md transition">
+                    <input type="checkbox" class="product-checkbox w-5 h-5 accent-blue-600 rounded cursor-pointer flex-shrink-0" onchange="calculateTotal()">
+                    
+                    <!-- 🖼️ Image with Upload Button -->
+                    <div class="relative w-16 h-16 flex-shrink-0 group cursor-pointer" onclick="this.querySelector('input').click()">
+                        <img src="https://images.unsplash.com/photo-1545241047-6083a3684587?w=300&auto=format&fit=crop&q=80" alt="ទំនិញ" class="product-img w-full h-full object-cover rounded-xl border bg-slate-100">
+                        <div class="absolute inset-0 bg-black/40 rounded-xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition text-[9px] font-medium text-center p-0.5">
+                            <i class="fa-solid fa-camera text-xs mb-0.5"></i>
+                            <span>Upload</span>
+                        </div>
+                        <input type="file" accept="image/*" class="hidden" onchange="changeProductImage(this)">
+                    </div>
+
+                    <div class="flex-grow min-w-0 space-y-1.5">
+                        <div class="flex justify-between items-center gap-1">
+                            <h3 class="font-bold text-slate-800 text-sm truncate">គោជល់មាស</h3>
+                            <div class="flex items-center gap-1 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-100 flex-shrink-0">
+                                <span class="text-purple-600 font-bold text-[9px]">ចំនួន:</span>
+                                <input type="number" min="1" value="1" class="product-qty-input w-10 bg-white text-center font-bold text-purple-700 text-xs rounded border border-purple-200 focus:ring-1 focus:ring-purple-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            <div class="bg-slate-50 p-1 rounded-lg border border-slate-200">
+                                <span class="text-slate-500 block text-[9px]">ដើមចិន ($)</span>
+                                <input type="number" step="0.01" value="4.08" class="product-cost-input w-full bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-blue-50 p-1 rounded-lg border border-blue-100">
+                                <span class="text-blue-600 block text-[9px]">Shipping ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-ship-input w-full bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-700 font-bold text-xs focus:ring-1 focus:ring-blue-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-amber-50 p-1 rounded-lg border border-amber-100">
+                                <span class="text-amber-600 block text-[9px]">ដឹកក្នុងស្រុក ($)</span>
+                                <input type="number" step="0.01" value="1.50" class="product-express-input w-full bg-white px-1.5 py-0.5 rounded border border-amber-200 text-amber-700 font-bold text-xs focus:ring-1 focus:ring-amber-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                            <div class="bg-emerald-50 p-1 rounded-lg border border-emerald-100">
+                                <span class="text-emerald-600 block text-[9px]">តម្លៃលក់ ($)</span>
+                                <input type="number" step="0.01" value="12.00" class="product-sell-input w-full bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-700 font-bold text-xs focus:ring-1 focus:ring-emerald-500 outline-none" oninput="calculateTotal()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        const CORRECT_PASS = "168";
+        let allSelected = false;
+
+        // 💾 រក្សាទុកការលក់ប្រចាំថ្ងៃ (Save Daily Sale Function)
+        // 📜 បង្ហាញប្រវត្តិលក់ & សរុបប្រចាំខែ (ជាមួយមុខងារ Filter)
+        function renderHistory() {
+            const historyList = document.getElementById('salesHistoryList');
+            const monthlyList = document.getElementById('monthlySummaryList');
+            const history = JSON.parse(localStorage.getItem('aura_sales_history') || '[]');
+
+            const dateFilter = document.getElementById('dateFilter') ? document.getElementById('dateFilter').value : '';
+            const monthFilter = document.getElementById('monthFilter') ? document.getElementById('monthFilter').value : '';
+
+            // តម្រង (Filter) ទិន្នន័យតាមថ្ងៃ និង ខែ
+            let filteredHistory = history.filter(item => {
+                const itemDateObj = new Date(item.id);
+                const itemYMD = itemDateObj.toISOString().slice(0, 10); // YYYY-MM-DD
+                const itemYM = itemDateObj.toISOString().slice(0, 7);   // YYYY-MM
+
+                let matchDate = true;
+                let matchMonth = true;
+
+                if (dateFilter) {
+                    matchDate = (itemYMD === dateFilter);
+                }
+                if (monthFilter) {
+                    matchMonth = (itemYM === monthFilter);
+                }
+
+                return matchDate && matchMonth;
             });
 
-            calculateTotal();
-        }
-
-        // Toggle Single Checkbox
-        function toggleProduct(id) {
-            const product = products.find(p => p.id === id);
-            if (product) {
-                product.checked = !product.checked;
-                renderProducts();
-            }
-        }
-
-        // Select All / Deselect All
-        function toggleSelectAll(status) {
-            products.forEach(p => p.checked = status);
-            renderProducts();
-        }
-
-        // Calculate Totals
-        function calculateTotal() {
-            let selectedCount = 0;
-            let totalItemsPrice = 0;
-            let totalShippingPrice = 0;
-
-            products.forEach(p => {
-                if (p.checked) {
-                    selectedCount++;
-                    totalItemsPrice += p.price;
-                    totalShippingPrice += p.shipping;
-                }
-            });
-
-            const grandTotal = totalItemsPrice + totalShippingPrice;
-
-            document.getElementById('selected-count').innerText = `${selectedCount} មុខ`;
-            document.getElementById('total-items-price').innerText = `$${totalItemsPrice.toFixed(2)}`;
-            document.getElementById('total-shipping-price').innerText = `$${totalShippingPrice.toFixed(2)}`;
-            document.getElementById('grand-total').innerText = `$${grandTotal.toFixed(2)}`;
-        }
-
-        // Show Notification Toast
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.classList.remove('opacity-0');
-            toast.classList.add('opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0');
-            }, 2500);
-        }
-
-        // Send Order / Copy Order
-        function sendOrderToTelegram() {
-            const selectedItems = products.filter(p => p.checked);
-
-            if (selectedItems.length === 0) {
-                if (tg && tg.showAlert) {
-                    tg.showAlert("សូមជ្រើសរើសទំនិញយ៉ាងហោចណាស់មួយ!");
-                } else {
-                    alert("សូមជ្រើសរើសទំនិញយ៉ាងហោចណាស់មួយ!");
-                }
+            if (filteredHistory.length === 0) {
+                historyList.innerHTML = `<p class="text-xs text-slate-400 text-center py-3">មិនមានទិន្នន័យត្រូវនឹងការស្វែងរកទេ</p>`;
+                monthlyList.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">គ្មានទិន្នន័យប្រចាំខែ</p>`;
                 return;
             }
 
-            let orderText = "🛒 **ការបញ្ជាទិញថ្មីពី Web App**\n---------------------------\n";
-            let totalItems = 0;
-            let totalShip = 0;
+            // 1. បង្ហាញប្រវត្តិលក់ប្រចាំថ្ងៃ
+            historyList.innerHTML = filteredHistory.map(item => `
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
+                    <div>
+                        <div class="font-bold text-slate-700">${item.date}</div>
+                        <div class="text-slate-500 text-[10px]">លក់បាន ${item.items.length} មុខ | ដើម: $${item.totalCost.toFixed(2)}</div>
+                    </div>
+                    <div class="text-right flex items-center gap-2">
+                        <div>
+                            <div class="font-bold text-emerald-600">+$${item.profit.toFixed(2)}</div>
+                            <div class="text-[10px] text-blue-600 font-semibold">$${item.totalSell.toFixed(2)}</div>
+                        </div>
+                        <button onclick="deleteHistoryItem(${item.id})" class="text-slate-400 hover:text-rose-500 p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
 
-            selectedItems.forEach((item, index) => {
-                const subtotal = item.price + item.shipping;
-                totalItems += item.price;
-                totalShip += item.shipping;
-                orderText += `${index + 1}. ${item.name}\n   - តម្លៃ: $${item.price.toFixed(2)} | ដឹក: $${item.shipping.toFixed(2)} => **$${subtotal.toFixed(2)}**\n`;
+            // 2. គណនា និងបូកសរុបប្រចាំខែ
+            const monthlyData = {};
+            filteredHistory.forEach(item => {
+                const dateObj = new Date(item.id);
+                const monthYear = dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+                if (!monthlyData[monthYear]) {
+                    monthlyData[monthYear] = {
+                        totalCost: 0,
+                        totalSell: 0,
+                        totalProfit: 0,
+                        totalOrders: 0
+                    };
+                }
+
+                monthlyData[monthYear].totalCost += item.totalCost;
+                monthlyData[monthYear].totalSell += item.totalSell;
+                monthlyData[monthYear].totalProfit += item.profit;
+                monthlyData[monthYear].totalOrders += 1;
             });
 
-            const grandTotal = totalItems + totalShip;
-            orderText += "---------------------------\n";
-            orderText += `📦 សរុបទំនិញ: $${totalItems.toFixed(2)}\n`;
-            orderText += `🚚 សរុបថ្លៃដឹក: $${totalShip.toFixed(2)}\n`;
-            orderText += `💰 **តម្លៃសរុបរួម: $${grandTotal.toFixed(2)}**`;
+            // 3. បង្ហាញសរុបតាមខែនីមួយៗ
+            monthlyList.innerHTML = Object.keys(monthlyData).map(mKey => {
+                const m = monthlyData[mKey];
+                return `
+                    <div class="p-3 bg-purple-50/60 border border-purple-100 rounded-xl text-xs space-y-1">
+                        <div class="flex justify-between items-center font-bold text-purple-900 border-b border-purple-100 pb-1">
+                            <span><i class="fa-solid fa-calendar-check mr-1 text-purple-600"></i> ខែ ${mKey}</span>
+                            <span class="bg-purple-200 text-purple-800 text-[10px] px-2 py-0.5 rounded-full">${m.totalOrders} លើក</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1 pt-1 text-center">
+                            <div>
+                                <span class="text-[9px] text-slate-500 block">ដើមសរុប</span>
+                                <span class="font-bold text-slate-700">$${m.totalCost.toFixed(2)}</span>
+                            </div>
+                            <div>
+                                <span class="text-[9px] text-blue-600 block">លក់បានសរុប</span>
+                                <span class="font-bold text-blue-700">$${m.totalSell.toFixed(2)}</span>
+                            </div>
+                            <div>
+                                <span class="text-[9px] text-emerald-600 block">ចំណេញសរុប</span>
+                                <span class="font-bold text-emerald-700">+$${m.totalProfit.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
-            // If inside Telegram WebApp, send data back to bot
-            if (tg && tg.sendData) {
-                try {
-                    tg.sendData(JSON.stringify({
-                        items: selectedItems,
-                        totalItemsPrice: totalItems.toFixed(2),
-                        totalShippingPrice: totalShip.toFixed(2),
-                        grandTotal: grandTotal.toFixed(2)
-                    }));
-                    tg.close();
-                } catch (e) {
-                    copyToClipboard(orderText);
-                }
-            } else {
-                // Fallback for normal browsers: Copy to clipboard
-                copyToClipboard(orderText);
+        function deleteHistoryItem(id) {
+            let history = JSON.parse(localStorage.getItem('aura_sales_history') || '[]');
+            history = history.filter(item => item.id !== id);
+            localStorage.setItem('aura_sales_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function clearAllHistory() {
+            if (confirm("តើអ្នកប្រាកដជាចង់លុបប្រវត្តិលក់ទាំងអស់មែនទេ?")) {
+                localStorage.removeItem('aura_sales_history');
+                renderHistory();
             }
         }
 
-        function copyToClipboard(text) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            showToast("បានចម្លងអត្ថបទការកម្មង់! អាច Paste ផ្ញើក្នុង Chat បាន");
+        // 📊 Function សម្រាប់ Export ទិន្នន័យទៅជា Excel File (.xlsx)
+        function exportToExcel() {
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            const data = [];
+
+            let totalCostSum = 0;
+            let totalSellSum = 0;
+            let totalProfitSum = 0;
+
+            checkboxes.forEach((cb, index) => {
+                if (cb.checked) {
+                    const parentCard = cb.closest('.product-item');
+                    const title = parentCard.querySelector('h3').textContent.trim();
+                    const qty = parseInt(parentCard.querySelector('.product-qty-input').value) || 1;
+                    const cost = parseFloat(parentCard.querySelector('.product-cost-input').value) || 0;
+                    const ship = parseFloat(parentCard.querySelector('.product-ship-input').value) || 0;
+                    const express = parseFloat(parentCard.querySelector('.product-express-input').value) || 0;
+                    const sell = parseFloat(parentCard.querySelector('.product-sell-input').value) || 0;
+
+                    const unitCostTotal = cost + ship + express;
+                    const itemTotalCost = unitCostTotal * qty;
+                    const itemTotalSell = sell * qty;
+                    const itemProfit = itemTotalSell - itemTotalCost;
+
+                    totalCostSum += itemTotalCost;
+                    totalSellSum += itemTotalSell;
+                    totalProfitSum += itemProfit;
+
+                    data.push({
+                        "ល.រ": data.length + 1,
+                        "ឈ្មោះទំនិញ": title,
+                        "ចំនួន": qty,
+                        "ដើមចិន ($)": cost,
+                        "Shipping ($)": ship,
+                        "ដឹកក្នុងស្រុក ($)": express,
+                        "ដើមសរុប/គ្រឿង ($)": unitCostTotal,
+                        "ដើមសរុបរួម ($)": itemTotalCost,
+                        "តម្លៃលក់/គ្រឿង ($)": sell,
+                        "តម្លៃលក់សរុប ($)": itemTotalSell,
+                        "ប្រាក់ចំណេញ ($)": itemProfit
+                    });
+                }
+            });
+
+            if (data.length === 0) {
+                alert("សូមជ្រើសរើស (Tick) មុខទំនិញយ៉ាងហោចណាស់ 1 មុននឹង Export!");
+                return;
+            }
+
+            // បន្ថែមជួររ៉ាប់រងបូកសរុបនៅខាងក្រោម (Summary Row)
+            data.push({
+                "ល.រ": "",
+                "ឈ្មោះទំនិញ": "--- សរុបរួម ---",
+                "ចំនួន": "",
+                "ដើមចិន ($)": "",
+                "Shipping ($)": "",
+                "ដឹកក្នុងស្រុក ($)": "",
+                "ដើមសរុប/គ្រឿង ($)": "",
+                "ដើមសរុបរួម ($)": totalCostSum,
+                "តម្លៃលក់/គ្រឿង ($)": "",
+                "តម្លៃលក់សរុប ($)": totalSellSum,
+                "ប្រាក់ចំណេញ ($)": totalProfitSum
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Aura_Decor_Summary");
+
+            // ទាញយក File Excel (.xlsx)
+            const dateStr = new Date().toISOString().slice(0,10);
+            XLSX.writeFile(workbook, `Aura_Decor_Calculations_${dateStr}.xlsx`);
         }
 
-        // Initial Render
-        renderProducts();
+        // 📷 Function សម្រាប់ប្តូររូបភាពពេល Upload
+        function changeProductImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgElem = input.parentElement.querySelector('.product-img');
+                    if (imgElem) {
+                        imgElem.src = e.target.result;
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function checkPassword(e) {
+            e.preventDefault();
+            const inputPass = document.getElementById('passInput').value;
+            const errorMsg = document.getElementById('errorMessage');
+
+            if (inputPass === CORRECT_PASS) {
+                document.getElementById('passwordModal').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+                errorMsg.classList.add('hidden');
+                renderHistory(); // ផ្ទុកប្រវត្តិលក់មកបង្ហាញ
+            } else {
+                errorMsg.classList.remove('hidden');
+                document.getElementById('passInput').classList.add('border-red-500');
+                document.getElementById('passInput').focus();
+            }
+        }
+
+        function lockApp() {
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+            document.getElementById('passInput').value = '';
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('passInput').classList.remove('border-red-500');
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            allSelected = !allSelected;
+            checkboxes.forEach(cb => cb.checked = allSelected);
+            document.getElementById('selectAllBtn').textContent = allSelected ? "ដកការជ្រើសរើស" : "ជ្រើសរើសទាំងអស់";
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            let totalCost = 0;
+            let totalSell = 0;
+            let selectedCount = 0;
+            let totalItemsQty = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selectedCount++;
+                    const parentCard = cb.closest('.product-item');
+                    
+                    const qtyInput = parentCard.querySelector('.product-qty-input');
+                    const costInput = parentCard.querySelector('.product-cost-input');
+                    const shipInput = parentCard.querySelector('.product-ship-input');
+                    const expressInput = parentCard.querySelector('.product-express-input');
+                    const sellInput = parentCard.querySelector('.product-sell-input');
+                    
+                    const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+                    const cost = parseFloat(costInput ? costInput.value : 0) || 0;
+                    const ship = parseFloat(shipInput ? shipInput.value : 0) || 0;
+                    const express = parseFloat(expressInput ? expressInput.value : 0) || 0;
+                    const sell = parseFloat(sellInput ? sellInput.value : 0) || 0;
+
+                    totalItemsQty += qty;
+                    totalCost += ((cost + ship + express) * qty);
+                    totalSell += (sell * qty);
+                }
+            });
+
+            const totalProfit = totalSell - totalCost;
+            const percentage = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
+
+            document.getElementById('selectedCount').textContent = `បានជ្រើសរើស ${selectedCount} មុខ (${totalItemsQty} គ្រឿង)`;
+            document.getElementById('totalCostDisplay').textContent = `$${totalCost.toFixed(2)}`;
+            document.getElementById('totalSellDisplay').textContent = `$${totalSell.toFixed(2)}`;
+
+            const profitElem = document.getElementById('profitAmount');
+            const percentElem = document.getElementById('profitPercent');
+            const resultCard = document.getElementById('resultCard');
+
+            profitElem.textContent = `$${totalProfit.toFixed(2)}`;
+            percentElem.textContent = `${percentage.toFixed(1)}%`;
+
+            if (totalProfit < 0) {
+                resultCard.className = "bg-rose-50 border border-rose-200/80 rounded-xl p-3 flex justify-between items-center transition";
+                profitElem.className = "text-xl font-bold text-rose-700";
+                percentElem.className = "text-sm font-bold bg-rose-200/60 text-rose-800 px-2.5 py-1 rounded-lg inline-block";
+            } else {
+                resultCard.className = "bg-emerald-50 border border-emerald-200/80 rounded-xl p-3 flex justify-between items-center transition";
+                profitElem.className = "text-xl font-bold text-emerald-700";
+                percentElem.className = "text-sm font-bold bg-emerald-200/60 text-emerald-800 px-2.5 py-1 rounded-lg inline-block";
+            }
+        }
     </script>
 </body>
 </html>
